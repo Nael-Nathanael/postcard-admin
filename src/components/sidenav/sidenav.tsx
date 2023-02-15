@@ -6,7 +6,6 @@ import sidenav_data from "./sidenav.data.json"
 
 export default function SideNav() {
     // TODO: make this dynamic
-
     const current_path = "/"
 
     return <aside className={jc("bg-black flex-shrink-0 text-white", classes.aside)}>
