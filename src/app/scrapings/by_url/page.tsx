@@ -9,6 +9,7 @@ import PlaceCards from "@/components/PlaceCards";
 
 export default function ScrapingsByUrl(context: any) {
   const url = context.searchParams.url;
+  console.log(url)
 
   const [data, setData] = useState<DetailPage | null>(null)
 
