@@ -7,20 +7,15 @@ import axios from "axios";
 import Image from "next/image";
 import PlaceCards from "@/components/PlaceCards";
 
-interface FlowPageProps {
-  searchParams: {
-    url: string
-  },
-}
-
-export default function ScrapingsByUrl(context: FlowPageProps) {
+export default function ScrapingsByUrl(context: any) {
   const url = context.searchParams.url;
 
   const [data, setData] = useState<DetailPage | null>(null)
 
   useEffect(() => {
+    if (data) return;
     fetchPageDetail()
-  }, [])
+  })
 
   async function fetchPageDetail() {
     await axios.get(`${process.env["NEXT_PUBLIC_API_URL"]}/dashboard/flow/page?url=${url}`)
@@ -31,7 +26,7 @@ export default function ScrapingsByUrl(context: FlowPageProps) {
   }
 
   if (!data) {
-    return <></>
+    return <div>A</div>
   }
 
   return <PostcardMain

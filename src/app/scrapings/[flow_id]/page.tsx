@@ -156,7 +156,7 @@ export default function FlowPage(props: FlowPageProps) {
     }
     {focusedSection === 'PLACES' &&
         <>
-            <PlaceCards places={cardData?.data} showDetails={true}/>
+            <PlaceCards places={cardData?.data}/>
 
           {!fullyLoaded &&
               <div className="w-100 d-flex justify-content-center">

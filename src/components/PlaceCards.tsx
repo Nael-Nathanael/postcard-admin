@@ -10,7 +10,7 @@ export default function PlaceCards({places}: PlaceCardsProps) {
 
   return <div className="row gy-5 mt-1">
     {places.map(place => {
-      return <div className={"col-md-6 col-lg-4"}>
+      return <div className={"col-md-6 col-lg-4"} key={place.placeId}>
         <PlaceCard place={place}/>
       </div>
     })}
