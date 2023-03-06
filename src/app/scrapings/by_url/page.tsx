@@ -26,7 +26,7 @@ export default function ScrapingsByUrl(context: any) {
   }
 
   if (!data) {
-    return <div>A</div>
+    return <div></div>
   }
 
   return <PostcardMain
