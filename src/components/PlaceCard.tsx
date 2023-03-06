@@ -1,113 +1,97 @@
+import {DetailPlace} from "@/interfaces/FlowInterface";
 import Image from "next/image";
-import {Place} from "@/interfaces/FlowInterface";
-import {Dispatch, SetStateAction} from "react";
 
-interface PlaceCardInterface {
-  focusedPlace: Place,
-  setFocusedPlace: Dispatch<SetStateAction<Place | null>>
+interface PlaceCardProps {
+  place: DetailPlace
 }
 
-export default function PlaceCard({focusedPlace, setFocusedPlace}: PlaceCardInterface) {
-  return <>
-    <div className={"position-fixed top-0 start-0 w-100 h-100"} style={{
-      zIndex: 1003,
-      background: "rgba(0, 0, 0, .6)",
-      cursor: "pointer",
-    }} onClick={() => setFocusedPlace(null)}/>
-    <div className="position-fixed top-50 start-50 translate-middle bg-white overflow-auto" style={{
-      width: "min(80vw, 500px)",
-      height: "min(90vh, 600px)",
-      zIndex: 1004,
+export default function PlaceCard({place}: PlaceCardProps) {
+  return <div className={`card h-100 shadow-sm position-relative pt-2 ${place.ignoredAt ? 'border-danger' : ''}`}>
+    <div className="position-absolute top-0 w-100 translate-middle-y d-flex justify-content-end">
+      {place.uploadedAt &&
+          <a
+              href={`https://postcard.inc/places/s/${place.placeId}`}
+              target={"_blank"} rel={"noreferrer"}
+              className="btn btn-sm text-white bg-black rounded-pill">
+              Postcard
+          </a>
+      }
+      {place.ignoredAt &&
+          <div className="btn btn-sm btn-danger rounded-pill" title={place.ignoredReason}>
+              IGNORED
+          </div>
+      }
+      {place.gmaps &&
+          <>
+              <div style={{width: "10px"}}/>
+              <a
+                  href={place.gmaps}
+                  target={"_blank"} rel={"noreferrer"}
+                  className="btn btn-sm btn-primary rounded-pill">
+                  Google Maps
+              </a>
+          </>
+      }
+    </div>
+    <div className="card-body lh-1 pb-1 pt-3">
+      <div className="small mb-2">
+        <p className={"mb-0 small"}>{place.urlTitle}</p>
+        <a href={place.url} target={"_blank"} rel={"noreferrer"} className={"text-primary"}>
+          <small>
+            {place.url}
+          </small>
+        </a>
+      </div>
+    </div>
+    <div className="card-body position-relative p-0 flex-shrink-0" style={{
+      height: "200px"
     }}>
-      <div className="container p-4">
-        <div className="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 className={"mb-0"}>{focusedPlace.name}</h4>
+      {place['media'].length > 0 &&
+          <Image fill={true} style={{
+            objectFit: 'cover'
+          }} src={place['media'][0]['url']} alt={place['name']}/>
+      }
+      {place['media'].length === 0 &&
+          <Image fill={true} style={{
+            objectFit: 'cover'
+          }} src={'https://via.placeholder.com/250x200.jpg'} alt={'placeholder image'}/>
+      }
+      <div className="position-absolute w-100 h-100 top-0 left-0 align-items-end d-flex" style={{
+        background: "linear-gradient(0deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,0) 50%)",
+      }}>
+        <div className="card-body text-white lh-1">
+          <p className={"mb-0"}>{place.name}</p>
+          <div className="small">
+            <small>
+              by {place.externalAttribution}
+            </small>
+            <br/>
+            <small>
+              Published at {new Date(place.externalPublishedAt).toLocaleDateString()}
+            </small>
           </div>
-          <i className="bi bi-x-lg" style={{
-            cursor: "pointer",
-          }} onClick={() => setFocusedPlace(null)}/>
-        </div>
-        {focusedPlace.media.length > 0 &&
-            <div className="w-100 position-relative my-2" style={{
-              height: "200px"
-            }}>
-                <Image src={focusedPlace.media[0].url} alt={"place image"} fill={true} style={{
-                  objectFit: "cover"
-                }}/>
-            </div>
-        }
-        {focusedPlace.row_data && focusedPlace.row_data.url && focusedPlace.row_data.url_title &&
-            <a href={focusedPlace.row_data.url} target={"_blank"} rel={"noreferrer"} className={""}>
-                <p className="text-primary lh-1 small">
-                  {focusedPlace.row_data.url_title}
-                </p>
-            </a>
-        }
-
-        {focusedPlace.externalAttribution &&
-            <>
-                <p className="fw-bold mb-0">Author</p>
-                <p>{focusedPlace.externalAttribution}</p>
-            </>
-        }
-
-        {focusedPlace.externalPublishedAt &&
-            <>
-                <p className="fw-bold mb-0">Published At</p>
-                <p>{focusedPlace.externalPublishedAt.toLocaleString()}</p>
-            </>
-        }
-
-        {focusedPlace.description &&
-            <>
-                <p className="fw-bold mb-0">Description</p>
-              {focusedPlace.description.split("\n").map((e, idx) => <p className={"mb-0"} key={idx}>{e}<br/></p>)}
-            </>
-        }
-
-        <p className={"mb-0 fw-bold"}>Links</p>
-        <div className="d-flex justify-content-between w-100">
-          <p className={"mb-0"}>
-          </p>
-
-        </div>
-
-        <>
-          <div className="row mb-2">
-            <div className={"col-6"}>
-              <p className={"mb-0 fw-bold"}>Lat</p>
-              <p className={"mb-0"}>{focusedPlace.row_data ? focusedPlace.row_data.lat || "-" : "-"}</p>
-            </div>
-            <div className={"col-6"}>
-              <p className={"mb-0 fw-bold"}>Score</p>
-              <p className={"mb-0"}>{focusedPlace.row_data ? focusedPlace.row_data.score * 100 || "-" : "-"}</p>
-            </div>
-            <div className={"col-6"}>
-              <p className={"mb-0 fw-bold"}>Long</p>
-              <p className={"mb-0"}>{focusedPlace.row_data ? focusedPlace.row_data.long || "-" : "-"}</p>
-            </div>
-          </div>
-        </>
-
-        <div className="d-flex justify-content-around align-items-center mt-4">
-          {focusedPlace.row_data &&
-              <a href={focusedPlace.row_data.gmap} rel={"noreferrer"}
-                 className={"btn btn-sm btn-primary rounded-0 w-100"}
-                 target={"_blank"}>
-                  Open in Google Map
-              </a>
-          }
-
-          {focusedPlace.placeId &&
-              <a href={"https://postcard.inc/places/s/" + focusedPlace.placeId} rel={"noreferrer"}
-                 className={"btn btn-sm btn-dark rounded-0 w-100"}
-                 target={"_blank"}>
-                  Open in Postcard
-              </a>
-          }
         </div>
       </div>
     </div>
-  </>
+    <div className="card-header bg-transparent d-flex justify-content-around border-0 py-2">
+      {!place.uploadedAt && !place.gmaps && !place.ignoredAt &&
+          <button className="btn btn-outline-danger small btn-sm rounded-pill flex-fill">
+              Not Uploaded
+          </button>
+      }
+    </div>
+    <div className="card-body h-100 small pt-0">
+      <p className={"small"}>
+        {place.ignoredReason}
+      </p>
+      {place.excerpt &&
+          <p>
+            {place.excerpt.split("\n").map((e, idx) => <p className={"mb-0"} key={idx}>{e}<br/></p>)}
+          </p>
+      }
+      <p>
+        {place.description.split("\n").map((e, idx) => <p className={"mb-0"} key={idx}>{e}<br/></p>)}
+      </p>
+    </div>
+  </div>
 }

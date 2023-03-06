@@ -1,20 +1,69 @@
+'use client';
+
 import React from "react";
+import Link from "next/link";
+import {useRouter} from "next/router";
+
+interface PostcardMainProps {
+  children: React.ReactNode,
+  title: string,
+  headtitle?: string,
+  headurl?: string,
+  foottitle?: string,
+  footurl?: string,
+  backbutton?: boolean
+}
 
 export default function PostcardMain({
+                                       backbutton,
                                        children,
-                                       title
-                                     }: {
-  children: React.ReactNode,
-  title: string
-}) {
+                                       title,
+                                       headtitle,
+                                       headurl,
+                                       foottitle,
+                                       footurl,
+                                     }: PostcardMainProps) {
   return <div className={"pb-3"}>
-    <h1 className="h3 top-0 position-sticky bg-white py-3 border mb-3" style={{
+    <div className="top-0 position-sticky bg-white py-3 border-bottom mb-3 lh-1" style={{
       zIndex: 1000
     }}>
-      <div className="container">
+      {backbutton &&
+          <p className={"text-primary container mb-0 a"} style={{cursor: "pointer"}} onClick={() => window.history.back()}>
+            back
+          </p>
+      }
+      {!backbutton && headtitle &&
+          <>
+            {headurl &&
+                <Link href={headurl} className={"text-primary container"}>
+                  {headtitle}
+                </Link>
+            }
+            {!headurl &&
+                <div className={"container"}>
+                  {headtitle}
+                </div>
+            }
+          </>
+      }
+      <h1 className="container h3 mb-0">
         {title}
-      </div>
-    </h1>
+      </h1>
+      {foottitle &&
+          <>
+            {footurl &&
+                <Link href={footurl} className={"text-primary container"}>
+                  {foottitle}
+                </Link>
+            }
+            {!footurl &&
+                <div className={"container text-secondary"}>
+                  {foottitle}
+                </div>
+            }
+          </>
+      }
+    </div>
     <div className="container">
       {children}
     </div>

@@ -1,9 +1,9 @@
 'use client';
 
-import FlowCard from "@/components/FlowCard";
 import {useEffect, useState} from "react";
 import axios from "axios";
-import {ExtendedFlowData, FlowData} from "@/interfaces/FlowInterface";
+import {ListFlowRoot} from "@/interfaces/FlowInterface";
+import Link from "next/link";
 
 interface FlowTableInterface {
   limit_per_page?: number
@@ -11,41 +11,25 @@ interface FlowTableInterface {
 
 export default function FlowTable({limit_per_page = 6}: FlowTableInterface) {
   const [isFetched, setIsFetched] = useState(false)
-  const [data, setData] = useState<FlowData[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [fullyLoaded, setFullyLoaded] = useState(false)
-
-  const [focusedDatum, setFocusedDatum] = useState<ExtendedFlowData | null>(null);
+  const [data, setData] = useState<ListFlowRoot | null>(null)
+  const [fullyLoaded, setFullyLoad] = useState<boolean>(false)
+  const [nextPage, setNextPage] = useState(1)
 
   useEffect(() => {
     if (!isFetched) {
-      refetch().then(_ => setIsFetched(true));
+      fetchNextPage().then(_ => setIsFetched(true));
     }
   })
 
-  async function fetchFlowDetail({focusedId}: { focusedId: number }) {
-    await axios.get(`${process.env["NEXT_PUBLIC_API_URL"]}/dashboard/flows/${focusedId}`)
-      .then(e => e.data)
+  async function fetchNextPage() {
+    await axios.get(`${process.env["NEXT_PUBLIC_API_URL"]}/dashboard/flow?page=${nextPage}&limit=${limit_per_page}`)
+      .then(e => e.data as ListFlowRoot)
       .then(e => {
-        const selectedRow = data.filter(e => e.id === focusedId)[0]
-
-        setFocusedDatum({
-          ...selectedRow,
-          data: e
-        })
-      })
-  }
-
-  async function refetch(current_page?: number | undefined) {
-    await axios.get(`${process.env["NEXT_PUBLIC_API_URL"]}/dashboard/flows?page=${current_page ? current_page : currentPage}&limit=${limit_per_page}`)
-      .then(e => e.data)
-      .then(e => {
-        setFullyLoaded(e.data.length === 0)
-        const newData = [...data, ...e.data]
-        setData(newData)
-        if (current_page) {
-          setCurrentPage(current_page)
+        if (e.data.length < e.limit) {
+          setFullyLoad(true)
         }
+        setNextPage(e.page + 1)
+        setData(e)
       })
   }
 
@@ -56,9 +40,8 @@ export default function FlowTable({limit_per_page = 6}: FlowTableInterface) {
         <th>ID</th>
         <th>Started At</th>
         <th>Source</th>
-        <th>URL Crawled</th>
-        <th>Suitable URL</th>
-        <th>Confidence</th>
+        <th>Total Page</th>
+        <th>Total Places</th>
         <th></th>
       </tr>
       </thead>
@@ -68,51 +51,27 @@ export default function FlowTable({limit_per_page = 6}: FlowTableInterface) {
               <td colSpan={7}>Loading...</td>
           </tr>
       }
-      {isFetched &&
-        data.map((datum) => {
-          const total_crawl = datum.crawl_result ? parseInt(datum.crawl_result.crawled) : 0;
-          const total_matched = datum.match_result ? parseInt(datum.match_result.matched) : 0;
-          const relevance_score = total_crawl ? Math.round(total_matched / total_crawl * 100) : 0;
-          return <tr key={datum.id}>
-            <td>#{String(datum.id).padStart(4, '0')}</td>
-            <td>{new Date(datum.flow_started_at).toLocaleString()}</td>
-            <td>{datum.source.replace(/__/g, " - ").replace(/_/g, " ")}</td>
-            {datum.match_ended_at &&
-                <>
-                    <td className={"text-center"}>{total_crawl}</td>
-                    <td className={"text-center"}>{total_matched}</td>
-                    <td className={`fw-bold text-center text-${relevance_score < 70 ? 'danger' : 'success'}`}>
-                      {relevance_score}%
-                    </td>
-                </>
-            }
-            {!datum.crawl_ended_at &&
-                <td colSpan={3} className={"text-center text-danger fw-bold"}>
-                    Error Occurred on Flow!
-                </td>
-            }
-            <td>
-              <button
-                type={"button"}
-                onClick={() => fetchFlowDetail({focusedId: datum.id})}
-                className="btn btn-primary btn-sm rounded-pill px-3">
-                Details
-              </button>
-            </td>
-          </tr>
-        })
-      }
+      {isFetched && data?.data.map((datum) => {
+        return <tr key={datum.id}>
+          <td>#{String(datum.id).padStart(4, '0')}</td>
+          <td>{new Date(datum.createdAt).toLocaleString()}</td>
+          <td>{datum.source.replace(/__/g, " - ").replace(/_/g, " ")}</td>
+          <td>{datum.pages.success} of {datum.pages.success + datum.pages.ignored}</td>
+          <td>{datum.places.success} of {datum.places.success + datum.places.ignored}</td>
+          <td className={"text-center"}>
+            <Link href={"/scrapings/" + datum.id} className="btn btn-primary btn-sm rounded-pill px-3">
+              Details
+            </Link>
+          </td>
+        </tr>
+      })}
       </tbody>
     </table>
 
     {!fullyLoaded && isFetched &&
-        <p onClick={() => refetch(currentPage + 1)} className="fw-bold text-primary text-center btn">
+        <p onClick={() => fetchNextPage()} className="fw-bold text-primary text-center btn">
             View More
         </p>
-    }
-
-    {focusedDatum &&
-        <FlowCard focusedDatum={focusedDatum} setFocusedDatum={setFocusedDatum}/>
     }
   </>
 }
