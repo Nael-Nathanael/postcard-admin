@@ -6,10 +6,12 @@ import {DetailPage} from "@/interfaces/FlowInterface";
 import axios from "axios";
 import Image from "next/image";
 import PlaceCards from "@/components/PlaceCards";
+import { useSearchParams } from 'next/navigation';
 
-export default function ScrapingsByUrl(context: any) {
-  const url = context.searchParams.url;
-  console.log(context)
+export default function ScrapingsByUrl() {
+  const searchParams = useSearchParams();
+
+  const url = searchParams.get('url');
 
   const [data, setData] = useState<DetailPage | null>(null)
 
