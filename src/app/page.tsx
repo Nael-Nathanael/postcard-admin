@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import Dashboard from "@/app/dashboard/page";
+import { NextPage } from "next";
 
-export default function Home() {
-  return Dashboard()
-}
+const Home: NextPage = () => Dashboard();
+
+export default Home;
